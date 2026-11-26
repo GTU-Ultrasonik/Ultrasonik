@@ -1,0 +1,20 @@
+{
+  "camera": {
+    "index": 0,
+    "width": 640,
+    "height": 480,
+    "fps": 60
+  },
+  "serial": {
+    "baud_rate": 115200,
+    "port": "COM3"
+  },
+  "network": {
+    "m2_command": 5003,
+    "m3_control": 5005,
+    "m4_trajectory": 5006,
+    "m4_model": 5007,
+    "m5_gateway": 5010,
+    "http_websocket": 8080
+  }
+}

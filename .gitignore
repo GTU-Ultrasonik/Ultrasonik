@@ -221,3 +221,18 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Ultrasonik: firmware, browser and machine-local artifacts
+.pio/
+node_modules/
+dist/
+coverage/
+*.elf
+*.hex
+*.o
+*.local.json
+*.local.yaml
+*.local.yml
+.env.local
+artifacts/
+*.log
