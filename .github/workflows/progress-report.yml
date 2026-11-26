@@ -1,0 +1,30 @@
+name: Progress and contribution report
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish approved module totals to the public website'
+        type: boolean
+        default: false
+  schedule:
+    - cron: '0 7 * * *'
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+concurrency:
+  group: progress-report
+  cancel-in-progress: false
+jobs:
+  report:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate progress and contributions
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGES_SYNC_TOKEN: ${{ secrets.PAGES_SYNC_TOKEN }}
+          PUBLISH: ${{ (github.event_name == 'workflow_dispatch' && inputs.publish) || (github.event_name == 'schedule' && vars.PAGES_SYNC_ENABLED == 'true') }}
+        run: python3 scripts/report_progress.py
