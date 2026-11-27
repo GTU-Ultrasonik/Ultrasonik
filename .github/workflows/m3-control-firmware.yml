@@ -1,0 +1,61 @@
+# M3 module verification (R3.13): the module's single command on Windows and Linux.
+# Software and virtual-board (S) tests only; board and rig tests are not run here.
+name: M3 control firmware
+
+on:
+  pull_request:
+    paths:
+      - "modules/m3-control-firmware/**"
+      - ".github/workflows/m3-control-firmware.yml"
+  push:
+    branches: [main]
+    paths:
+      - "modules/m3-control-firmware/**"
+      - ".github/workflows/m3-control-firmware.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: M3 / ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: modules/m3-control-firmware
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: m3-pio-${{ runner.os }}-${{ hashFiles('modules/m3-control-firmware/platformio.ini') }}
+      - name: gcc (native tests and virtual board)
+        run: |
+          if ! gcc --version; then
+            if [ "$RUNNER_OS" = "Windows" ]; then
+              choco install mingw -y --no-progress
+              echo "C:/ProgramData/mingw64/mingw64/bin" >> "$GITHUB_PATH"
+            else
+              sudo apt-get update && sudo apt-get install -y gcc
+            fi
+          fi
+      - run: python -m pip install -r requirements.txt
+      - name: Single command (tests/run_all.py)
+        run: python tests/run_all.py
+      - name: Report to job summary
+        if: always()
+        run: cat "$(ls -t reports/generated/report_*.md | head -1)" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: m3-report-${{ matrix.os }}
+          path: modules/m3-control-firmware/reports/generated/
